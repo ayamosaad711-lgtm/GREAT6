@@ -1,0 +1,518 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>لعبة فهم المقروء</title>
+<link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800;900&family=Amiri:wght@400;700&display=swap" rel="stylesheet">
+<style>
+:root{--primary:#6C3BE4;--pl:#8B5CF6;--pd:#4C1D95;--sec:#F59E0B;--acc:#EC4899;--grn:#10B981;--red:#EF4444;--bg:#0F0A1E;--bg2:#1A1035;--bg3:#241848;--card:#1E1545;--brd:rgba(108,59,228,0.3);--txt:#F8F4FF;--txt2:#C4B5FD;--txt3:#7C6FAE;--star:#FBBF24;--rad:20px;--shd:0 8px 32px rgba(108,59,228,0.25);}
+*{margin:0;padding:0;box-sizing:border-box;}
+body{font-family:'Tajawal',sans-serif;background:var(--bg);color:var(--txt);min-height:100vh;overflow-x:hidden;direction:rtl;}
+body::before{content:'';position:fixed;inset:0;background-image:radial-gradient(1px 1px at 20% 30%,rgba(255,255,255,0.6) 0%,transparent 100%),radial-gradient(1px 1px at 80% 10%,rgba(255,255,255,0.5) 0%,transparent 100%),radial-gradient(1.5px 1.5px at 50% 60%,rgba(255,255,255,0.4) 0%,transparent 100%),radial-gradient(1px 1px at 10% 80%,rgba(255,255,255,0.5) 0%,transparent 100%),radial-gradient(1px 1px at 90% 70%,rgba(255,255,255,0.3) 0%,transparent 100%),radial-gradient(1px 1px at 70% 40%,rgba(255,255,255,0.5) 0%,transparent 100%),radial-gradient(1px 1px at 40% 20%,rgba(200,180,255,0.5) 0%,transparent 100%);pointer-events:none;z-index:0;}
+.screen{display:none;}
+.screen.active{display:block;animation:fadeIn 0.5s ease;}
+@keyframes fadeIn{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
+.float-shapes{position:fixed;inset:0;pointer-events:none;z-index:0;overflow:hidden;}
+.shape{position:absolute;border-radius:50%;opacity:0.07;animation:flt linear infinite;}
+.shape:nth-child(1){width:320px;height:320px;background:var(--primary);top:-120px;right:-80px;animation-duration:22s;}
+.shape:nth-child(2){width:200px;height:200px;background:var(--acc);bottom:8%;left:-50px;animation-duration:16s;animation-delay:-6s;}
+.shape:nth-child(3){width:160px;height:160px;background:var(--sec);top:45%;left:18%;animation-duration:28s;animation-delay:-12s;}
+@keyframes flt{0%,100%{transform:translateY(0) rotate(0)}50%{transform:translateY(-28px) rotate(180deg)}}
+
+/* HOME */
+#home-screen{min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:2rem;position:relative;z-index:1;}
+.home-content{position:relative;z-index:1;text-align:center;max-width:680px;}
+.mascot{font-size:5rem;display:block;margin-bottom:1rem;animation:bnc 2s ease-in-out infinite;filter:drop-shadow(0 0 20px rgba(108,59,228,0.5));}
+@keyframes bnc{0%,100%{transform:translateY(0)}50%{transform:translateY(-15px)}}
+.home-title{font-size:clamp(2.4rem,6vw,4.5rem);font-weight:900;line-height:1.1;margin-bottom:0.5rem;background:linear-gradient(135deg,#C4B5FD,#F0ABFC,#FDE68A);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
+.home-sub{font-size:1.15rem;color:var(--txt2);margin-bottom:2.5rem;font-weight:500;}
+.name-box{background:var(--card);border:1px solid var(--brd);border-radius:var(--rad);padding:2rem;margin-bottom:2rem;}
+.name-box label{display:block;font-size:1rem;color:var(--txt2);margin-bottom:0.75rem;font-weight:500;}
+.name-inp{width:100%;background:var(--bg2);border:2px solid var(--brd);border-radius:14px;padding:0.9rem 1.2rem;font-size:1.1rem;font-family:'Tajawal',sans-serif;color:var(--txt);outline:none;transition:border-color .3s,box-shadow .3s;direction:rtl;text-align:right;}
+.name-inp:focus{border-color:var(--pl);box-shadow:0 0 0 4px rgba(108,59,228,0.2);}
+.name-inp::placeholder{color:var(--txt3);}
+.btn-start{background:linear-gradient(135deg,var(--primary),var(--pl));color:white;border:none;border-radius:18px;padding:1.1rem 3rem;font-size:1.4rem;font-family:'Tajawal',sans-serif;font-weight:700;cursor:pointer;transition:transform .2s,box-shadow .2s;box-shadow:0 6px 24px rgba(108,59,228,0.4);}
+.btn-start:hover{transform:translateY(-3px) scale(1.03);box-shadow:0 10px 36px rgba(108,59,228,0.5);}
+.teacher-btn{margin-top:1.5rem;background:transparent;border:1px solid var(--brd);color:var(--txt2);border-radius:14px;padding:0.7rem 2rem;font-size:1rem;font-family:'Tajawal',sans-serif;cursor:pointer;transition:all .3s;}
+.teacher-btn:hover{background:var(--bg3);color:var(--txt);border-color:var(--pl);}
+.stars-deco{color:var(--star);font-size:1.4rem;margin-bottom:1rem;letter-spacing:4px;}
+.err-msg{color:var(--red);font-size:0.85rem;margin-top:0.5rem;display:none;}
+
+/* GAME WRAPPER */
+.gwrap{min-height:100vh;padding:1.5rem;max-width:860px;margin:0 auto;position:relative;z-index:1;}
+.top-bar{display:flex;align-items:center;justify-content:space-between;margin-bottom:1.5rem;flex-wrap:wrap;gap:.75rem;}
+.player-badge{background:var(--card);border:1px solid var(--brd);border-radius:50px;padding:.5rem 1.2rem;font-size:1rem;font-weight:700;color:var(--txt2);display:flex;align-items:center;gap:.5rem;}
+.player-badge span{color:var(--txt);}
+.prog-sec{flex:1;max-width:280px;}
+.prog-lbl{font-size:.85rem;color:var(--txt3);margin-bottom:.4rem;text-align:center;}
+.prog-track{background:var(--bg3);border-radius:50px;height:10px;overflow:hidden;}
+.prog-fill{background:linear-gradient(90deg,var(--primary),var(--pl),#F0ABFC);height:100%;border-radius:50px;transition:width .6s cubic-bezier(.4,0,.2,1);}
+.score-badge{background:linear-gradient(135deg,var(--sec),#FDE68A);color:#422006;border-radius:50px;padding:.5rem 1.2rem;font-weight:800;font-size:1rem;}
+
+/* PASSAGE */
+.passage-card{background:var(--card);border:1px solid var(--brd);border-radius:var(--rad);padding:2rem;margin-bottom:1.5rem;box-shadow:var(--shd);position:relative;overflow:hidden;}
+.passage-card::before{content:'';position:absolute;top:0;right:0;width:100px;height:100px;background:radial-gradient(circle,rgba(108,59,228,0.12),transparent);}
+.passage-img{width:100%;max-height:220px;object-fit:cover;border-radius:14px;margin-bottom:1.5rem;border:1px solid var(--brd);}
+.passage-lbl{display:inline-block;background:rgba(108,59,228,0.2);color:var(--pl);border-radius:8px;padding:.3rem .9rem;font-size:.85rem;font-weight:700;margin-bottom:1rem;}
+.passage-title{font-size:1.6rem;font-weight:800;color:var(--txt);margin-bottom:1.2rem;font-family:'Amiri',serif;line-height:1.4;}
+.passage-text{font-family:'Amiri',serif;font-size:1.2rem;line-height:2;color:var(--txt2);text-align:justify;}
+.btn-q{width:100%;background:linear-gradient(135deg,var(--primary),var(--pl));color:white;border:none;border-radius:var(--rad);padding:1.1rem;font-size:1.3rem;font-family:'Tajawal',sans-serif;font-weight:700;cursor:pointer;transition:transform .2s,box-shadow .2s;box-shadow:0 6px 20px rgba(108,59,228,0.35);}
+.btn-q:hover{transform:translateY(-2px);}
+
+/* QUESTION */
+.qcard{background:var(--card);border:1px solid var(--brd);border-radius:var(--rad);padding:2rem;margin-bottom:1.5rem;box-shadow:var(--shd);}
+.q-num{font-size:.85rem;color:var(--txt3);font-weight:600;margin-bottom:.5rem;text-transform:uppercase;letter-spacing:1.5px;}
+.skill-badge{display:inline-block;border-radius:8px;padding:.25rem .8rem;font-size:.8rem;font-weight:700;margin-bottom:1rem;}
+.q-text{font-size:1.3rem;font-weight:700;color:var(--txt);line-height:1.6;margin-bottom:1.5rem;font-family:'Amiri',serif;}
+.opts{display:flex;flex-direction:column;gap:.85rem;}
+.opt-btn{background:var(--bg2);border:2px solid rgba(108,59,228,0.2);border-radius:16px;padding:1rem 1.4rem;font-size:1.1rem;font-family:'Tajawal',sans-serif;color:var(--txt2);cursor:pointer;transition:all .25s;text-align:right;display:flex;align-items:center;gap:.8rem;}
+.opt-lbl{width:32px;height:32px;border-radius:50%;background:var(--bg3);border:1.5px solid rgba(108,59,228,0.3);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:.85rem;flex-shrink:0;transition:all .25s;}
+.opt-btn:hover:not(:disabled){background:var(--bg3);border-color:var(--pl);color:var(--txt);transform:translateX(-4px);}
+.opt-btn:hover:not(:disabled) .opt-lbl{background:var(--primary);border-color:var(--primary);color:white;}
+.opt-btn:disabled{cursor:not-allowed;}
+.opt-btn.correct{background:rgba(16,185,129,0.15);border-color:var(--grn);color:#6EE7B7;}
+.opt-btn.correct .opt-lbl{background:var(--grn);border-color:var(--grn);color:white;}
+.opt-btn.wrong{background:rgba(239,68,68,0.12);border-color:var(--red);color:#FCA5A5;}
+.opt-btn.wrong .opt-lbl{background:var(--red);border-color:var(--red);color:white;}
+.fb-banner{border-radius:14px;padding:1rem 1.4rem;font-size:1.05rem;font-weight:600;text-align:center;margin-top:1rem;animation:sli .4s ease;display:none;}
+@keyframes sli{from{opacity:0;transform:translateY(-10px)}to{opacity:1;transform:translateY(0)}}
+.fb-banner.ok{background:rgba(16,185,129,0.15);border:1px solid var(--grn);color:#6EE7B7;display:block;}
+.fb-banner.bad{background:rgba(239,68,68,0.1);border:1px solid var(--red);color:#FCA5A5;display:block;}
+
+/* RESULT */
+#result-screen{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:2rem;position:relative;z-index:1;}
+.res-card{background:var(--card);border:1px solid var(--brd);border-radius:28px;padding:3rem 2.5rem;text-align:center;max-width:560px;width:100%;box-shadow:var(--shd);position:relative;overflow:hidden;}
+.res-card::before{content:'';position:absolute;top:-80px;left:50%;transform:translateX(-50%);width:300px;height:300px;background:radial-gradient(circle,rgba(108,59,228,0.12),transparent 70%);}
+.trophy{font-size:4.5rem;display:block;margin-bottom:1rem;animation:spn .8s ease;}
+@keyframes spn{0%{transform:scale(0) rotate(-180deg)}70%{transform:scale(1.2) rotate(10deg)}100%{transform:scale(1) rotate(0)}}
+.res-nm{font-size:1.1rem;color:var(--txt3);margin-bottom:.5rem;}
+.res-big{font-size:4rem;font-weight:900;background:linear-gradient(135deg,#C4B5FD,#F0ABFC);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;line-height:1;margin-bottom:.5rem;}
+.res-frac{font-size:1.2rem;color:var(--txt3);margin-bottom:1.5rem;}
+.stars-row{font-size:2.5rem;margin-bottom:1.2rem;letter-spacing:6px;}
+.medal{display:inline-block;background:linear-gradient(135deg,#F59E0B,#FDE68A);color:#422006;border-radius:50px;padding:.5rem 1.5rem;font-weight:800;font-size:1rem;margin-bottom:1.5rem;}
+.res-bar-wrap{margin:1.2rem 0;}
+.res-bar-lbl{font-size:.9rem;color:var(--txt3);margin-bottom:.5rem;}
+.res-bar{background:var(--bg3);border-radius:50px;height:14px;overflow:hidden;}
+.res-bar-fill{height:100%;border-radius:50px;background:linear-gradient(90deg,var(--primary),var(--pl),#F0ABFC);transition:width 1.5s cubic-bezier(.4,0,.2,1);width:0%;}
+.res-msg{font-size:1.1rem;font-weight:700;color:var(--txt2);margin:1.5rem 0;line-height:1.5;background:var(--bg2);border-radius:14px;padding:1rem 1.2rem;border:1px solid var(--brd);}
+.btn-retry{background:linear-gradient(135deg,var(--primary),var(--pl));color:white;border:none;border-radius:14px;padding:.9rem 2.5rem;font-size:1.1rem;font-family:'Tajawal',sans-serif;font-weight:700;cursor:pointer;transition:transform .2s;margin:.4rem;}
+.btn-retry:hover{transform:translateY(-2px);}
+.btn-home{background:var(--bg2);border:1px solid var(--brd);}
+
+/* TEACHER LOGIN */
+#teacher-login{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:2rem;position:relative;z-index:1;}
+.login-card{background:var(--card);border:1px solid var(--brd);border-radius:var(--rad);padding:2.5rem;max-width:420px;width:100%;text-align:center;}
+.login-title{font-size:1.8rem;font-weight:800;margin-bottom:.5rem;}
+.login-sub{color:var(--txt3);font-size:.95rem;margin-bottom:2rem;}
+.fg{margin-bottom:1.2rem;text-align:right;}
+.fg label{display:block;font-size:.9rem;color:var(--txt2);margin-bottom:.5rem;font-weight:600;}
+.finp{width:100%;background:var(--bg2);border:2px solid var(--brd);border-radius:12px;padding:.85rem 1.1rem;font-size:1rem;font-family:'Tajawal',sans-serif;color:var(--txt);outline:none;direction:rtl;text-align:right;transition:border-color .3s;}
+.finp:focus{border-color:var(--pl);}
+.hint{font-size:.8rem;color:var(--txt3);margin-top:.4rem;}
+.btn-login{width:100%;background:linear-gradient(135deg,var(--primary),var(--pl));color:white;border:none;border-radius:14px;padding:1rem;font-size:1.1rem;font-family:'Tajawal',sans-serif;font-weight:700;cursor:pointer;transition:transform .2s;margin-top:.5rem;}
+.btn-login:hover{transform:translateY(-2px);}
+.back-link{color:var(--txt3);font-size:.9rem;cursor:pointer;margin-top:1.2rem;display:block;}
+.back-link:hover{color:var(--txt2);}
+
+/* DASHBOARD */
+#dashboard{min-height:100vh;background:var(--bg);position:relative;z-index:1;}
+.dash-hdr{background:var(--card);border-bottom:1px solid var(--brd);padding:1.2rem 2rem;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:1rem;position:sticky;top:0;z-index:100;}
+.dash-logo{font-size:1.3rem;font-weight:800;color:var(--txt);}
+.dash-logo span{color:var(--pl);}
+.dash-nav{display:flex;gap:.5rem;}
+.dnbtn{background:transparent;border:1px solid var(--brd);color:var(--txt2);border-radius:10px;padding:.5rem 1rem;font-size:.9rem;font-family:'Tajawal',sans-serif;cursor:pointer;transition:all .2s;}
+.dnbtn:hover,.dnbtn.active{background:var(--primary);border-color:var(--primary);color:white;}
+.dcont{padding:2rem;max-width:1100px;margin:0 auto;}
+.stats-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:1rem;margin-bottom:2rem;}
+.stat-card{background:var(--card);border:1px solid var(--brd);border-radius:var(--rad);padding:1.5rem;text-align:center;box-shadow:var(--shd);transition:transform .2s;position:relative;overflow:hidden;}
+.stat-card:hover{transform:translateY(-3px);}
+.stat-card::before{content:'';position:absolute;top:0;right:0;width:80px;height:80px;border-radius:50%;opacity:.08;}
+.stat-card.pur::before{background:var(--primary);}
+.stat-card.amb::before{background:var(--sec);}
+.stat-card.grn::before{background:var(--grn);}
+.stat-card.pnk::before{background:var(--acc);}
+.si{font-size:2rem;margin-bottom:.5rem;}
+.sv{font-size:2.2rem;font-weight:900;margin-bottom:.2rem;}
+.sv.pur{color:var(--pl);}
+.sv.amb{color:var(--sec);}
+.sv.grn{color:var(--grn);}
+.sv.pnk{color:var(--acc);}
+.slbl{font-size:.85rem;color:var(--txt3);font-weight:600;}
+.charts-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:1rem;margin-bottom:2rem;}
+.chart-card{background:var(--card);border:1px solid var(--brd);border-radius:var(--rad);padding:1.5rem;}
+.chart-ttl{font-size:1rem;font-weight:700;color:var(--txt2);margin-bottom:1rem;}
+.bar-chart{display:flex;flex-direction:column;gap:.8rem;}
+.bar-row{display:flex;align-items:center;gap:.8rem;}
+.bar-nm{font-size:.85rem;color:var(--txt3);min-width:80px;text-align:right;}
+.bar-track{flex:1;background:var(--bg3);border-radius:50px;height:22px;overflow:hidden;}
+.bar-fill{height:100%;border-radius:50px;display:flex;align-items:center;padding-right:8px;font-size:.75rem;font-weight:700;}
+.bar-val{font-size:.8rem;color:var(--txt3);min-width:28px;}
+.donut-wrap{display:flex;align-items:center;justify-content:space-around;flex-wrap:wrap;gap:1rem;}
+.d-svg{filter:drop-shadow(0 4px 12px rgba(108,59,228,0.3));}
+.d-leg{display:flex;flex-direction:column;gap:.6rem;}
+.leg-it{display:flex;align-items:center;gap:.5rem;font-size:.85rem;}
+.leg-dot{width:10px;height:10px;border-radius:50%;flex-shrink:0;}
+.tbl-card{background:var(--card);border:1px solid var(--brd);border-radius:var(--rad);overflow:hidden;margin-bottom:2rem;}
+.tbl-hdr{padding:1.2rem 1.5rem;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid var(--brd);flex-wrap:wrap;gap:.75rem;}
+.tbl-ttl{font-size:1.1rem;font-weight:700;color:var(--txt);}
+.exp-btn{background:var(--bg2);border:1px solid var(--brd);border-radius:10px;padding:.5rem 1rem;font-size:.85rem;font-family:'Tajawal',sans-serif;color:var(--txt2);cursor:pointer;transition:all .2s;margin-left:.4rem;}
+.exp-btn:hover{background:var(--primary);color:white;border-color:var(--primary);}
+.stbl{width:100%;border-collapse:collapse;}
+.stbl th{background:var(--bg2);padding:.85rem 1.2rem;font-size:.8rem;color:var(--txt3);font-weight:700;text-transform:uppercase;letter-spacing:1px;text-align:right;}
+.stbl td{padding:.9rem 1.2rem;font-size:.95rem;color:var(--txt2);border-bottom:1px solid rgba(108,59,228,0.1);text-align:right;}
+.stbl tr:last-child td{border-bottom:none;}
+.stbl tr:hover td{background:rgba(108,59,228,0.05);}
+.rnk{display:inline-flex;align-items:center;justify-content:center;width:28px;height:28px;border-radius:8px;font-weight:800;font-size:.9rem;}
+.r1{background:linear-gradient(135deg,#F59E0B,#FDE68A);color:#422006;}
+.r2{background:linear-gradient(135deg,#9CA3AF,#E5E7EB);color:#1F2937;}
+.r3{background:linear-gradient(135deg,#CD7C3C,#FBBF24);color:#422006;}
+.rx{background:var(--bg3);color:var(--txt3);}
+.sp{display:inline-block;border-radius:50px;padding:.25rem .75rem;font-weight:700;font-size:.85rem;}
+.sh{background:rgba(16,185,129,0.15);color:#6EE7B7;}
+.sm{background:rgba(245,158,11,0.15);color:#FDE68A;}
+.sl{background:rgba(239,68,68,0.12);color:#FCA5A5;}
+.pb-sm{background:var(--bg3);border-radius:50px;height:6px;width:80px;overflow:hidden;display:inline-block;vertical-align:middle;margin-right:6px;}
+.pb-fill{height:100%;border-radius:50px;background:linear-gradient(90deg,var(--primary),var(--pl));}
+.qec{display:flex;flex-direction:column;gap:.7rem;}
+.qr{display:flex;align-items:center;gap:.7rem;}
+.ql{font-size:.8rem;color:var(--txt3);min-width:120px;text-align:right;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.qt{flex:1;background:var(--bg3);border-radius:50px;height:18px;overflow:hidden;}
+.qf{height:100%;border-radius:50px;background:linear-gradient(90deg,var(--red),#F87171);display:flex;align-items:center;justify-content:flex-end;padding-left:6px;}
+.qn{font-size:.75rem;font-weight:700;color:white;}
+#conf-cv{position:fixed;inset:0;pointer-events:none;z-index:999;}
+@media(max-width:600px){.home-title{font-size:2.2rem;}.passage-text{font-size:1.05rem;}.q-text{font-size:1.1rem;}.opt-btn{font-size:.95rem;}.dcont{padding:1rem;}.stbl{font-size:.82rem;}}
+</style>
+</head>
+<body>
+<canvas id="conf-cv"></canvas>
+<div class="float-shapes"><div class="shape"></div><div class="shape"></div><div class="shape"></div></div>
+
+<!-- HOME -->
+<div id="home-screen" class="screen active" style="display:flex;">
+  <div class="home-content">
+    <div class="stars-deco">✦ ✦ ✦</div>
+    <span class="mascot">🦉</span>
+    <h1 class="home-title">لعبة فهم المقروء</h1>
+    <p class="home-sub">تحدَّ نفسك واختبر مهاراتك في القراءة!</p>
+    <div class="name-box">
+      <label for="sname">👤 أدخل اسمك لتبدأ المغامرة</label>
+      <input type="text" id="sname" class="name-inp" placeholder="الاسم الكريم..." maxlength="40">
+      <div class="err-msg" id="name-err">⚠️ من فضلك أدخل اسمك أولاً</div>
+    </div>
+    <button class="btn-start" onclick="startGame()">🚀 ابدأ اللعبة</button><br>
+    <button class="teacher-btn" onclick="showTLogin()">🏫 بوابة المعلم</button>
+  </div>
+</div>
+
+<!-- PASSAGE -->
+<div id="passage-screen" class="screen">
+  <div class="gwrap">
+    <div class="top-bar">
+      <div class="player-badge">🎓 <span id="pname1"></span></div>
+      <div class="prog-sec"><div class="prog-lbl">التقدم</div><div class="prog-track"><div class="prog-fill" id="prog1" style="width:0%"></div></div></div>
+      <div class="score-badge">⭐ 0 / 5</div>
+    </div>
+    <div class="passage-card">
+      <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/1/1e/Daintree_Rainforest.jpg/1200px-Daintree_Rainforest.jpg" alt="غابة مطيرة" class="passage-img" onerror="this.style.display='none'">
+      <div class="passage-lbl">📖 نص القراءة</div>
+      <h2 class="passage-title">الغابات المطيرة: رئة الأرض</h2>
+      <p class="passage-text">تُعدّ الغابات المطيرة الاستوائية من أغنى النظم البيئية على وجه الأرض. تمتدّ هذه الغابات على طول خطّ الاستواء، وتستقبل كميات هائلة من الأمطار طوال العام. تضمّ هذه الغابات ملايين الأنواع من النباتات والحيوانات والحشرات، كثيرٌ منها لم يتمكّن العلماء من دراسته بعد.<br><br>تؤدّي الغابات المطيرة دوراً محورياً في تنقية الهواء وتنظيم المناخ العالمي؛ إذ تمتصّ كميات كبيرة من ثاني أكسيد الكربون وتُنتج الأكسجين، ولهذا السبب يُطلق عليها العلماء اسم «رئة الأرض». كما تُسهم في تنظيم دورة المياه عبر ما تُطلقه من بخار الماء في الغلاف الجوي.<br><br>لكنّ هذه الغابات تتعرّض لتهديدات متزايدة جرّاء إزالة الأشجار وتوسّع الزراعة والتطوير العمراني. تُشير التقديرات إلى أنّ مساحات شاسعة تُقطع كلّ دقيقة من هذه الغابات الثمينة. إنّ الحفاظ عليها ليس مسؤوليةً محلية فحسب، بل هو واجبٌ إنساني عالمي.</p>
+    </div>
+    <button class="btn-q" onclick="showQs()">أنا جاهز! لنبدأ الأسئلة 🎯</button>
+  </div>
+</div>
+
+<!-- QUESTION -->
+<div id="question-screen" class="screen">
+  <div class="gwrap">
+    <div class="top-bar">
+      <div class="player-badge">🎓 <span id="pname2"></span></div>
+      <div class="prog-sec"><div class="prog-lbl" id="qlbl">السؤال 1 من 5</div><div class="prog-track"><div class="prog-fill" id="prog2" style="width:20%"></div></div></div>
+      <div class="score-badge" id="live-sc">⭐ 0 / 5</div>
+    </div>
+    <div class="qcard" id="qcard">
+      <div class="q-num" id="qnum"></div>
+      <div class="skill-badge" id="sbadge"></div>
+      <p class="q-text" id="qtext"></p>
+      <div class="opts" id="opts"></div>
+      <div class="fb-banner" id="fb"></div>
+    </div>
+  </div>
+</div>
+
+<!-- RESULT -->
+<div id="result-screen" class="screen" style="display:none;">
+  <div class="res-card">
+    <span class="trophy" id="trophy">🏆</span>
+    <div class="res-nm" id="res-nm"></div>
+    <div class="res-big" id="res-big">0%</div>
+    <div class="res-frac" id="res-frac"></div>
+    <div class="stars-row" id="stars-row"></div>
+    <div class="medal" id="medal" style="display:none;"></div>
+    <div class="res-bar-wrap"><div class="res-bar-lbl">نسبة الإنجاز</div><div class="res-bar"><div class="res-bar-fill" id="res-bar"></div></div></div>
+    <div class="res-msg" id="res-msg"></div>
+    <button class="btn-retry" onclick="retryGame()">🔄 إعادة اللعب</button>
+    <button class="btn-retry btn-home" onclick="goHome()">🏠 الرئيسية</button>
+  </div>
+</div>
+
+<!-- TEACHER LOGIN -->
+<div id="teacher-login" class="screen" style="display:none;">
+  <div class="login-card">
+    <div style="font-size:3rem;margin-bottom:.5rem">🏫</div>
+    <h2 class="login-title">بوابة المعلم</h2>
+    <p class="login-sub">أدخل بياناتك للوصول إلى لوحة التحكم</p>
+    <div class="fg"><label>اسم المستخدم</label><input type="text" id="lu" class="finp" placeholder="teacher"></div>
+    <div class="fg"><label>كلمة المرور</label><input type="password" id="lp" class="finp" placeholder="••••••"><div class="hint">💡 تلميح: المستخدم: teacher / كلمة المرور: 1234</div></div>
+    <div class="err-msg" id="lerr" style="text-align:center;">⚠️ بيانات الدخول غير صحيحة</div>
+    <button class="btn-login" onclick="doLogin()">دخول →</button>
+    <span class="back-link" onclick="goHome()">← العودة للرئيسية</span>
+  </div>
+</div>
+
+<!-- DASHBOARD -->
+<div id="dashboard" class="screen" style="display:none;">
+  <div class="dash-hdr">
+    <div class="dash-logo">🦉 لعبة <span>فهم المقروء</span></div>
+    <div class="dash-nav">
+      <button class="dnbtn active" onclick="dTab(this,'ov')">نظرة عامة</button>
+      <button class="dnbtn" onclick="dTab(this,'st')">الطلاب</button>
+      <button class="dnbtn" onclick="goHome()">🚪 خروج</button>
+    </div>
+  </div>
+  <div class="dcont" id="dcont"></div>
+</div>
+
+<script>
+const QS=[
+  {sk:"الفكرة الرئيسية",sc:"#7C3AED",sb:"rgba(124,58,237,0.15)",tx:"ما الفكرة الرئيسية التي يتناولها النص؟",op:["أنواع الحيوانات في الغابة","أهمية الغابات المطيرة وضرورة الحفاظ عليها","طرق الزراعة في المناطق الاستوائية"],co:1,ok:"🎉 رائع! الفكرة الرئيسية للنص هي أهمية الغابات المطيرة.",no:"الفكرة الرئيسية تتعلق بأهمية الغابات المطيرة وحمايتها. لا بأس!"},
+  {sk:"معنى كلمة",sc:"#0891B2",sb:"rgba(8,145,178,0.15)",tx:"ما معنى كلمة «محوري» في جملة «تؤدّي الغابات المطيرة دوراً محورياً»؟",op:["ضئيل وثانوي","أساسي وبالغ الأهمية","مؤقت وعابر"],co:1,ok:"✅ ممتاز! كلمة محوري تعني أساسي وبالغ الأهمية.",no:"كلمة محوري تعني أساسي وبالغ الأهمية. تعلّمنا معاً!"},
+  {sk:"ترتيب الأحداث",sc:"#059669",sb:"rgba(5,150,105,0.15)",tx:"وفقاً للنص، أيّ هذه العمليات يحدث أولاً في دور الغابة بالمناخ؟",op:["إطلاق بخار الماء في الجو","امتصاص ثاني أكسيد الكربون","تطوير المناطق العمرانية"],co:1,ok:"👏 صحيح! امتصاص ثاني أكسيد الكربون هو الدور المذكور أولاً.",no:"النص يذكر امتصاص ثاني أكسيد الكربون أولاً ثم إنتاج الأكسجين."},
+  {sk:"استنتاج",sc:"#B45309",sb:"rgba(180,83,9,0.15)",tx:"بناءً على النص، ماذا يمكن استنتاجه إذا استمرّت إزالة الغابات؟",op:["ستتحسّن جودة الهواء في العالم","ستزداد كميات ثاني أكسيد الكربون وتتأثر دورة المياه","سيزداد عدد الأنواع البيولوجية المكتشفة"],co:1,ok:"🌟 تفكير ممتاز! هذا الاستنتاج صحيح تماماً.",no:"إزالة الغابات ستزيد ثاني أكسيد الكربون وتضر دورة المياه."},
+  {sk:"معلومة مباشرة",sc:"#9D174D",sb:"rgba(157,23,77,0.15)",tx:"ما الاسم الذي يُطلقه العلماء على الغابات المطيرة وفقاً للنص؟",op:["صندوق الحياة","رئة الأرض","قلب الطبيعة"],co:1,ok:"🥳 إجابة صحيحة! يُطلق العلماء عليها اسم «رئة الأرض».",no:"يُطلق العلماء عليها «رئة الأرض» كما ورد في النص."}
+];
+
+const SD=[
+  {name:"سارة الأحمدي",score:5,date:"2025-01-15"},{name:"محمد الزهراني",score:4,date:"2025-01-15"},
+  {name:"نورا الشمري",score:5,date:"2025-01-16"},{name:"عبدالله القحطاني",score:3,date:"2025-01-16"},
+  {name:"ريم الحربي",score:5,date:"2025-01-17"},{name:"يوسف العتيبي",score:2,date:"2025-01-17"},
+  {name:"لمى الدوسري",score:4,date:"2025-01-18"},{name:"فيصل المالكي",score:3,date:"2025-01-18"},
+  {name:"هنوف الرشيدي",score:5,date:"2025-01-19"},{name:"خالد الغامدي",score:1,date:"2025-01-19"},
+  {name:"دلال السبيعي",score:4,date:"2025-01-20"},{name:"إبراهيم القرني",score:2,date:"2025-01-20"}
+];
+
+const QE=[{l:"الفكرة الرئيسية",e:2},{l:"معنى كلمة",e:4},{l:"ترتيب الأحداث",e:5},{l:"استنتاج",e:7},{l:"معلومة مباشرة",e:1}];
+
+let pname="",cq=0,sc=0,ans=false;
+
+function showScreen(id){
+  document.querySelectorAll('.screen').forEach(s=>{s.classList.remove('active');s.style.display='none';});
+  const el=document.getElementById(id);
+  el.style.display=id==='home-screen'?'flex':(id==='result-screen'||id==='teacher-login')?'flex':'block';
+  setTimeout(()=>el.classList.add('active'),10);
+}
+
+function snd(t){
+  try{
+    const ctx=new(window.AudioContext||window.webkitAudioContext)();
+    const o=ctx.createOscillator(),g=ctx.createGain();
+    o.connect(g);g.connect(ctx.destination);
+    if(t==='ok'){o.frequency.setValueAtTime(600,ctx.currentTime);o.frequency.exponentialRampToValueAtTime(900,ctx.currentTime+.15);o.frequency.exponentialRampToValueAtTime(1200,ctx.currentTime+.3);}
+    else{o.frequency.setValueAtTime(280,ctx.currentTime);o.frequency.exponentialRampToValueAtTime(180,ctx.currentTime+.25);}
+    g.gain.setValueAtTime(.12,ctx.currentTime);g.gain.exponentialRampToValueAtTime(.001,ctx.currentTime+.45);
+    o.start(ctx.currentTime);o.stop(ctx.currentTime+.45);
+  }catch(e){}
+}
+
+function startGame(){
+  const n=document.getElementById('sname').value.trim();
+  if(!n){document.getElementById('name-err').style.display='block';return;}
+  document.getElementById('name-err').style.display='none';
+  pname=n;cq=0;sc=0;
+  document.getElementById('pname1').textContent=n;
+  document.getElementById('pname2').textContent=n;
+  showScreen('passage-screen');
+}
+
+function showQs(){renderQ();showScreen('question-screen');}
+
+function renderQ(){
+  ans=false;
+  const q=QS[cq],tot=QS.length,pct=((cq+1)/tot*100).toFixed(0);
+  document.getElementById('qlbl').textContent=`السؤال ${cq+1} من ${tot}`;
+  document.getElementById('prog2').style.width=pct+'%';
+  document.getElementById('prog1').style.width=pct+'%';
+  document.getElementById('live-sc').textContent=`⭐ ${sc} / 5`;
+  const nums=['الأول','الثاني','الثالث','الرابع','الخامس'];
+  document.getElementById('qnum').textContent=`السؤال ${nums[cq]}`;
+  const sb=document.getElementById('sbadge');
+  sb.textContent=q.sk;sb.style.background=q.sb;sb.style.color=q.sc;sb.style.border=`1px solid ${q.sc}44`;
+  document.getElementById('qtext').textContent=q.tx;
+  const ol=document.getElementById('opts');ol.innerHTML='';
+  const lbls=['أ','ب','ج'];
+  q.op.forEach((op,i)=>{
+    const btn=document.createElement('button');
+    btn.className='opt-btn';
+    btn.innerHTML=`<span class="opt-lbl">${lbls[i]}</span> ${op}`;
+    btn.onclick=()=>pick(i,btn);
+    ol.appendChild(btn);
+  });
+  const fb=document.getElementById('fb');fb.className='fb-banner';fb.textContent='';
+  const card=document.getElementById('qcard');
+  card.style.opacity='0';card.style.transform='translateX(20px)';
+  requestAnimationFrame(()=>{card.style.transition='all .4s ease';card.style.opacity='1';card.style.transform='translateX(0)';});
+}
+
+function pick(idx,btn){
+  if(ans)return;ans=true;
+  const q=QS[cq];
+  document.querySelectorAll('.opt-btn').forEach(b=>b.disabled=true);
+  const fb=document.getElementById('fb');
+  if(idx===q.co){
+    btn.classList.add('correct');sc++;snd('ok');
+    fb.textContent=q.ok;fb.className='fb-banner ok';
+    document.getElementById('live-sc').textContent=`⭐ ${sc} / 5`;
+  }else{
+    btn.classList.add('wrong');
+    document.querySelectorAll('.opt-btn')[q.co].classList.add('correct');
+    snd('bad');fb.textContent=q.no;fb.className='fb-banner bad';
+  }
+  setTimeout(()=>{cq++;if(cq<QS.length)renderQ();else showResult();},1900);
+}
+
+function showResult(){
+  const pct=Math.round(sc/QS.length*100);
+  document.getElementById('res-nm').textContent=`أحسنت يا ${pname}!`;
+  document.getElementById('res-big').textContent=pct+'%';
+  document.getElementById('res-frac').textContent=`${sc} من ${QS.length} إجابات صحيحة`;
+  const n=sc>=5?5:sc>=4?4:sc>=3?3:sc>=2?2:1;
+  document.getElementById('stars-row').textContent='⭐'.repeat(n)+'☆'.repeat(5-n);
+  const tr=document.getElementById('trophy'),md=document.getElementById('medal'),ms=document.getElementById('res-msg');
+  if(sc===5){tr.textContent='🏆';md.style.display='inline-block';md.textContent='🥇 ميدالية ذهبية - متفوق!';ms.textContent='🌟 استثنائي! حصلت على أعلى درجة ممكنة. أنت نجم في فهم المقروء!';confetti();}
+  else if(sc===4){tr.textContent='🥈';md.style.display='inline-block';md.textContent='🥈 ميدالية فضية - ممتاز!';ms.textContent='👏 رائع جداً! أداء ممتاز يعكس فهماً عميقاً للنص.';}
+  else if(sc===3){tr.textContent='🥉';md.style.display='none';ms.textContent='💪 أداء جيد! أنت على الطريق الصحيح. قراءة النص مرة أخرى ستساعدك.';}
+  else if(sc===2){tr.textContent='📚';md.style.display='none';ms.textContent='🌱 لا بأس، كل محاولة تعلم! حاول قراءة النص بتمعن أكبر.';}
+  else{tr.textContent='💡';md.style.display='none';ms.textContent='😊 البداية هي أول الطريق! راجع الفقرة بعناية وحاول مجدداً.';}
+  const ex=JSON.parse(sessionStorage.getItem('nr')||'[]');
+  ex.push({name:pname,score:sc,date:new Date().toLocaleDateString('ar-SA')});
+  sessionStorage.setItem('nr',JSON.stringify(ex));
+  showScreen('result-screen');
+  setTimeout(()=>{document.getElementById('res-bar').style.width=pct+'%';},300);
+}
+
+function retryGame(){cq=0;sc=0;showQs();renderQ();}
+function goHome(){showScreen('home-screen');}
+
+function confetti(){
+  const cv=document.getElementById('conf-cv'),ctx=cv.getContext('2d');
+  cv.width=window.innerWidth;cv.height=window.innerHeight;
+  const ps=[],cols=['#6C3BE4','#F59E0B','#EC4899','#10B981','#C4B5FD','#FDE68A'];
+  for(let i=0;i<130;i++)ps.push({x:Math.random()*cv.width,y:-20,w:Math.random()*10+6,h:Math.random()*5+4,c:cols[Math.floor(Math.random()*cols.length)],vx:(Math.random()-.5)*4,vy:Math.random()*4+2,a:Math.random()*Math.PI*2,sp:(Math.random()-.5)*.2});
+  let fr=0;
+  function draw(){ctx.clearRect(0,0,cv.width,cv.height);ps.forEach(p=>{ctx.save();ctx.translate(p.x,p.y);ctx.rotate(p.a);ctx.fillStyle=p.c;ctx.fillRect(-p.w/2,-p.h/2,p.w,p.h);ctx.restore();p.x+=p.vx;p.y+=p.vy;p.a+=p.sp;p.vy+=.05;});fr++;if(fr<170)requestAnimationFrame(draw);else ctx.clearRect(0,0,cv.width,cv.height);}
+  draw();
+}
+
+function showTLogin(){showScreen('teacher-login');}
+function doLogin(){
+  const u=document.getElementById('lu').value.trim(),p=document.getElementById('lp').value;
+  if(u==='teacher'&&p==='1234'){document.getElementById('lerr').style.display='none';showDash();}
+  else document.getElementById('lerr').style.display='block';
+}
+
+function showDash(){showScreen('dashboard');renderDash('ov');}
+
+function dTab(el,tab){
+  document.querySelectorAll('.dnbtn').forEach(b=>b.classList.remove('active'));
+  el.classList.add('active');renderDash(tab);
+}
+
+function allSt(){
+  const nr=JSON.parse(sessionStorage.getItem('nr')||'[]');
+  return[...SD,...nr.map(s=>({name:s.name,score:s.score,date:s.date}))].sort((a,b)=>b.score-a.score);
+}
+
+function renderDash(tab){
+  const c=document.getElementById('dcont');
+  c.innerHTML=tab==='ov'?buildOv():buildSt();
+  setTimeout(animBars,100);
+}
+
+function buildOv(){
+  const st=allSt(),tot=st.length;
+  const avg=(st.reduce((s,x)=>s+x.score,0)/tot).toFixed(1);
+  const pass=st.filter(s=>s.score>=3).length,perf=st.filter(s=>s.score===5).length;
+  const pr=Math.round(pass/tot*100),mx=Math.max(...QE.map(q=>q.e)),mw=QE.reduce((a,b)=>a.e>b.e?a:b);
+  return`<div style="margin-bottom:1.5rem"><h2 style="font-size:1.4rem;font-weight:800;color:var(--txt);margin-bottom:.3rem">📊 لوحة النتائج</h2><p style="color:var(--txt3);font-size:.9rem">نظرة شاملة على أداء الطلاب</p></div>
+  <div class="stats-grid">
+    <div class="stat-card pur"><div class="si">👥</div><div class="sv pur">${tot}</div><div class="slbl">إجمالي الطلاب</div></div>
+    <div class="stat-card amb"><div class="si">📈</div><div class="sv amb">${avg}</div><div class="slbl">متوسط الدرجات</div></div>
+    <div class="stat-card grn"><div class="si">✅</div><div class="sv grn">${pass}</div><div class="slbl">طالب ناجح (${pr}%)</div></div>
+    <div class="stat-card pnk"><div class="si">⭐</div><div class="sv pnk">${perf}</div><div class="slbl">درجة كاملة</div></div>
+  </div>
+  <div class="charts-grid">
+    <div class="chart-card"><div class="chart-ttl">📉 أكثر الأسئلة خطأً</div>
+      <div class="qec">${QE.map(q=>`<div class="qr"><div class="ql">${q.l}</div><div class="qt"><div class="qf" data-w="${Math.round(q.e/mx*100)}" style="width:0%"><span class="qn">${q.e}</span></div></div></div>`).join('')}</div>
+      <div style="margin-top:1rem;padding:.75rem;background:rgba(239,68,68,0.1);border-radius:10px;font-size:.85rem;color:#FCA5A5;border:1px solid rgba(239,68,68,0.2)">⚠️ الأصعب: <strong>${mw.l}</strong> (${mw.e} أخطاء)</div>
+    </div>
+    <div class="chart-card"><div class="chart-ttl">🎯 توزيع الدرجات</div>${buildDonut(st)}</div>
+  </div>
+  <div class="chart-card" style="margin-bottom:1rem"><div class="chart-ttl">📊 أعلى الطلاب درجةً</div>
+    <div class="bar-chart">${st.slice(0,6).map(s=>`<div class="bar-row"><div class="bar-nm">${s.name.split(' ')[0]}</div><div class="bar-track"><div class="bar-fill" data-w="${s.score*20}" style="width:0%;background:${bc(s.score)}"><span style="color:rgba(255,255,255,.9);font-size:.75rem;font-weight:700">${s.score}/5</span></div></div><div class="bar-val">${s.score}</div></div>`).join('')}</div>
+  </div>`;
+}
+
+function buildDonut(st){
+  const cn=[0,0,0,0,0],cl=['#EF4444','#F59E0B','#FBBF24','#6C3BE4','#10B981'],tot=st.length;
+  st.forEach(s=>{if(s.score>=1&&s.score<=5)cn[s.score-1]++;});
+  let ca=-Math.PI/2,paths='';
+  cn.forEach((c,i)=>{
+    if(!c)return;
+    const ang=(c/tot)*2*Math.PI,cx=80,cy=80,r=60,ir=36;
+    const x1=cx+r*Math.cos(ca),y1=cy+r*Math.sin(ca),x2=cx+r*Math.cos(ca+ang),y2=cy+r*Math.sin(ca+ang);
+    const ix1=cx+ir*Math.cos(ca),iy1=cy+ir*Math.sin(ca),ix2=cx+ir*Math.cos(ca+ang),iy2=cy+ir*Math.sin(ca+ang);
+    const lg=ang>Math.PI?1:0;
+    paths+=`<path d="M${ix1},${iy1} L${x1},${y1} A${r},${r} 0 ${lg},1 ${x2},${y2} L${ix2},${iy2} A${ir},${ir} 0 ${lg},0 ${ix1},${iy1} Z" fill="${cl[i]}" opacity=".9"/>`;
+    ca+=ang;
+  });
+  const leg=['1','2','3','4','5'].map((l,i)=>`<div class="leg-it"><div class="leg-dot" style="background:${cl[i]}"></div><span style="color:var(--txt3);font-size:.82rem">درجة ${l}: ${cn[i]} طالب</span></div>`).join('');
+  return`<div class="donut-wrap"><svg class="d-svg" viewBox="0 0 160 160" width="140" height="140">${paths}<circle cx="80" cy="80" r="30" fill="var(--bg2)"/><text x="80" y="75" text-anchor="middle" fill="var(--txt2)" font-size="11" font-family="Tajawal">${tot}</text><text x="80" y="90" text-anchor="middle" fill="var(--txt3)" font-size="9" font-family="Tajawal">طالب</text></svg><div class="d-leg">${leg}</div></div>`;
+}
+
+function bc(s){return s>=4?'linear-gradient(90deg,#059669,#34D399)':s===3?'linear-gradient(90deg,#B45309,#FBBF24)':'linear-gradient(90deg,#9D174D,#F472B6)';}
+
+function buildSt(){
+  const st=allSt();
+  const rows=st.map((s,i)=>{
+    const p=s.score*20,rc=i===0?'r1':i===1?'r2':i===2?'r3':'rx',spc=s.score>=4?'sh':s.score===3?'sm':'sl';
+    return`<tr><td><span class="rnk ${rc}">${i+1}</span></td><td style="font-weight:600;color:var(--txt)">${s.name}</td><td><span class="sp ${spc}">${s.score} / 5</span></td><td><div style="display:flex;align-items:center;gap:6px"><div class="pb-sm"><div class="pb-fill" style="width:${p}%"></div></div><span style="font-size:.82rem;color:var(--txt3)">${p}%</span></div></td><td style="color:var(--txt3);font-size:.85rem">${s.date}</td></tr>`;
+  }).join('');
+  return`<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1.5rem;flex-wrap:wrap;gap:.75rem"><div><h2 style="font-size:1.4rem;font-weight:800;color:var(--txt)">👩‍🎓 نتائج الطلاب</h2><p style="color:var(--txt3);font-size:.9rem">${st.length} طالب مسجّل</p></div></div>
+  <div class="tbl-card"><div class="tbl-hdr"><div class="tbl-ttl">📋 كشف الدرجات</div><div><button class="exp-btn" onclick="expCSV()">⬇ تصدير CSV</button><button class="exp-btn" onclick="expPrint()">🖨 طباعة</button></div></div>
+  <div style="overflow-x:auto"><table class="stbl"><thead><tr><th>الترتيب</th><th>اسم الطالب</th><th>الدرجة</th><th>النسبة</th><th>التاريخ</th></tr></thead><tbody>${rows}</tbody></table></div></div>`;
+}
+
+function animBars(){
+  document.querySelectorAll('[data-w]').forEach(el=>{
+    const w=el.getAttribute('data-w');
+    setTimeout(()=>{el.style.transition='width 1s ease';el.style.width=w+'%';},60);
+  });
+}
+
+function expCSV(){
+  const st=allSt();
+  const blob=new Blob(['\uFEFF'+'الاسم,الدرجة,النسبة,التاريخ\n'+st.map(s=>`${s.name},${s.score},${s.score*20}%,${s.date}`).join('\n')],{type:'text/csv;charset=utf-8'});
+  const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='نتائج_الطلاب.csv';a.click();
+}
+
+function expPrint(){
+  const st=allSt();
+  const rows=st.map((s,i)=>`<tr><td>${i+1}</td><td>${s.name}</td><td>${s.score}/5</td><td>${s.score*20}%</td><td>${s.date}</td></tr>`).join('');
+  const w=window.open('','_blank');
+  w.document.write(`<!DOCTYPE html><html lang="ar" dir="rtl"><head><meta charset="UTF-8"><title>نتائج الطلاب</title><link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;700&display=swap" rel="stylesheet"><style>body{font-family:Tajawal,Arial;padding:2rem;direction:rtl}h1{color:#6C3BE4;margin-bottom:.5rem}table{width:100%;border-collapse:collapse;margin-top:1rem}th,td{border:1px solid #ddd;padding:10px;text-align:right}th{background:#6C3BE4;color:white}tr:nth-child(even){background:#f9f5ff}</style></head><body><h1>🦉 لعبة فهم المقروء — كشف الدرجات</h1><p style="color:#888">تاريخ الطباعة: ${new Date().toLocaleDateString('ar-SA')}</p><table><thead><tr><th>الترتيب</th><th>الاسم</th><th>الدرجة</th><th>النسبة</th><th>التاريخ</th></tr></thead><tbody>${rows}</tbody></table></body></html>`);
+  w.print();
+}
+</script>
+</body>
+</html>
